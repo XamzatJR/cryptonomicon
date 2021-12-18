@@ -79,7 +79,7 @@
         <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3">
           <div
             :key="t"
-            v-for="t in filteredTickers()"
+            v-for="t in paginatedTickers"
             @click="sel = t"
             :class="{ 'border-4': sel === t }"
             class="bg-white overflow-hidden shadow rounded-lg border-purple-800 border-solid cursor-pointer"
@@ -122,7 +122,7 @@
         <div class="flex items-end border-gray-600 border-b border-l h-64">
           <div
             :key="idx"
-            v-for="(bar, idx) in normalizeGraph()"
+            v-for="(bar, idx) in normalizedGraph"
             :style="{ height: bar + '%' }"
             class="bg-purple-800 border w-10"
           ></div>
@@ -165,25 +165,48 @@ export default {
   data() {
     return {
       ticker: "",
+      filter: "",
+      
       tickers: [],
       coins: null,
       sel: null,
+
       graph: [],
+      
       page: 1,
-      filter: "",
-      hasNextPage: true,
       error: false
     };
   },
-  methods: {
-    filteredTickers() {
-      const start = (this.page - 1) * 6;
-      const end = this.page * 6;
-      const filteredTickers = this.tickers.filter(ticker => ticker.name.toLowerCase().includes(this.filter.toLowerCase()));
-      this.hasNextPage = filteredTickers.length > end;
-      return filteredTickers.slice(start, end);
-    },
 
+  computed: {
+    startIndex() {
+      return (this.page - 1) * 6
+    },
+    endIndex() {
+      return this.page * 6
+    },
+    hasNextPage() {
+      return this.filteredTickers.length > this.endIndex
+    },
+    filteredTickers() {
+      return this.tickers.filter(ticker => ticker.name.toLowerCase().includes(this.filter.toLowerCase()));
+    },
+    paginatedTickers() {
+      return this.filteredTickers.slice(this.startIndex, this.endIndex);
+    },
+    normalizedGraph() {
+      const maxValue = Math.max(...this.graph);
+      const minValue = Math.min(...this.graph);
+      if (maxValue === minValue) {
+        return this.graph.map(() => 50);
+      }
+      return this.graph.map(
+        (price) => 5 + ((price - minValue) * 95) / (maxValue - minValue)
+      );
+    }
+  },
+
+  methods: {
     subscribeToUpdates(tickerName) {
       setInterval(async () => {
           const f = await fetch(
@@ -221,14 +244,6 @@ export default {
       localStorage.setItem('cryptonomicon-list', JSON.stringify(this.tickers));
     },
 
-    normalizeGraph() {
-      const maxValue = Math.max(...this.graph);
-      const minValue = Math.min(...this.graph);
-      return this.graph.map(
-        (price) => 5 + ((price - minValue) * 95) / (maxValue - minValue)
-      );
-    },
-
     async fetchCoins() {
       const res = await fetch('https://min-api.cryptocompare.com/data/all/coinlist?&api_key=fa2147371ff46aa9dd33a80399caaee4c0ac8ad502a502ed7d08893e764630c1');
       const fetchedCoins = await res.json();
@@ -251,6 +266,7 @@ export default {
       }
     }
   },
+
   created() {
     const windowData = Object.fromEntries(new URL(window.location).searchParams.entries())
     if (windowData.filter) {
@@ -268,6 +284,7 @@ export default {
     }
     this.fetchCoins()
   },
+
   watch: {
     filter() {
       window.history.pushState(

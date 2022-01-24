@@ -1,21 +1,38 @@
 <template>
   <div class="container mx-auto flex flex-col items-center bg-gray-100 p-4">
-       <div v-if="!coins" class="fixed w-100 h-100 opacity-80 bg-purple-800 inset-0 z-50 flex items-center justify-center">
-          <svg class="animate-spin -ml-1 mr-3 h-12 w-12 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-        </div>
+    <div
+      v-if="!coins"
+      class="fixed w-100 h-100 opacity-80 bg-purple-800 inset-0 z-50 flex items-center justify-center"
+    >
+      <svg
+        class="animate-spin -ml-1 mr-3 h-12 w-12 text-white"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <circle
+          class="opacity-25"
+          cx="12"
+          cy="12"
+          r="10"
+          stroke="currentColor"
+          stroke-width="4"
+        ></circle>
+        <path
+          class="opacity-75"
+          fill="currentColor"
+          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+        ></path>
+      </svg>
+    </div>
     <div class="container">
       <section>
         <div class="flex">
           <div class="max-w-xs">
-            <label for="wallet" class="block text-sm font-medium text-gray-700"
-              >Тикер</label
-            >
+            <label for="wallet" class="block text-sm font-medium text-gray-700">Тикер</label>
             <div class="mt-1 relative rounded-md shadow-md">
               <input
-                @input="suggestedCoins(), error = false"
+                @input="suggestedCoins(), (error = false)"
                 @keydown.enter="addTicker(ticker)"
                 v-model="ticker"
                 type="text"
@@ -31,7 +48,8 @@
             >
               <span
                 class="inline-flex items-center px-2 m-1 rounded-md text-xs font-medium bg-gray-300 text-gray-800 cursor-pointer"
-                v-for="coin in suggestedCoins()" :key="coin"
+                v-for="coin in suggestedCoins()"
+                :key="coin"
                 @click="addTicker(coin)"
               >
                 {{ coin }}
@@ -64,15 +82,23 @@
       <template v-if="tickers.length">
         <hr class="w-full border-t border-gray-600 my-4" />
         <div>
-          <button v-if="page > 1" @click="page-=1" class="my-4 mx-2 inline-flex items-center py-2 px-4 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-full text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+          <button
+            v-if="page > 1"
+            @click="page -= 1"
+            class="my-4 mx-2 inline-flex items-center py-2 px-4 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-full text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+          >
             Назад
           </button>
-          <button v-if="hasNextPage" @click="page+=1" class="my-4 mx-2 inline-flex items-center py-2 px-4 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-full text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+          <button
+            v-if="hasNextPage"
+            @click="page += 1"
+            class="my-4 mx-2 inline-flex items-center py-2 px-4 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-full text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+          >
             Вперед
           </button>
           <div>
             <label for="filter">Фильтр:</label>
-            <input @input="page = 1" v-model="filter" id="filter">
+            <input @input="page = 1" v-model="filter" id="filter" />
           </div>
         </div>
         <hr class="w-full border-t border-gray-600 my-4" />
@@ -81,13 +107,11 @@
             :key="t"
             v-for="t in paginatedTickers"
             @click="selectedTicker = t"
-            :class="{ 'border-4': selectedTicker === t }"
+            :class="{ 'border-4': selectedTicker === t, 'bg-red-100': invalidTickers.includes(t.name) && t.price === '-'}"
             class="bg-white overflow-hidden shadow rounded-lg border-purple-800 border-solid cursor-pointer"
           >
             <div class="px-4 py-5 sm:p-6 text-center">
-              <dt class="text-sm font-medium text-gray-500 truncate">
-                {{ t.name }} - USD
-              </dt>
+              <dt class="text-sm font-medium text-gray-500 truncate">{{ t.name }} - USD</dt>
               <dd class="mt-1 text-3xl font-semibold text-gray-900">
                 {{ formatPrice(t.price) }}
               </dd>
@@ -127,11 +151,7 @@
             class="bg-purple-800 border w-10"
           ></div>
         </div>
-        <button
-          type="button"
-          class="absolute top-0 right-0"
-          @click="selectedTicker = null"
-        >
+        <button type="button" class="absolute top-0 right-0" @click="selectedTicker = null">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -160,29 +180,29 @@
 </template>
 
 <script>
-import {subscribeToTicker, unsubscribeFromTicker, fetchCoins} from './api.js';
+import { subscribeToTicker, unsubscribeFromTicker, fetchCoins, invalidCoins } from '@/api.js';
 
 export default {
-  name: "App",
+  name: 'App',
   data() {
     return {
-      ticker: "",
-      filter: "",
-      
+      ticker: '',
+      filter: '',
+
       tickers: [],
       selectedTicker: null,
       page: 1,
 
       graph: [],
-      
+
       coins: null,
-      error: false
-    };
+      error: false,
+    }
   },
 
   created() {
-    const windowData = Object.fromEntries(new URL(window.location).searchParams.entries());
-    const tickersData = localStorage.getItem('cryptonomicon-list');
+    const windowData = Object.fromEntries(new URL(window.location).searchParams.entries())
+    const tickersData = localStorage.getItem('cryptonomicon-list')
 
     if (windowData.filter) {
       this.filter = windowData.filter
@@ -192,14 +212,14 @@ export default {
     }
 
     if (tickersData) {
-      this.tickers = JSON.parse(tickersData);
-      this.tickers.forEach(ticker => {
+      this.tickers = JSON.parse(tickersData)
+      this.tickers.forEach((ticker) => {
         subscribeToTicker(ticker.name, (newPrice) => {
           this.updateTicker(ticker.name, newPrice)
-        });
+        })
       })
     }
-    setInterval(this.updateTickers, 5000);
+    setInterval(this.updateTickers, 5000)
     this.getCoins()
   },
 
@@ -210,102 +230,111 @@ export default {
     endIndex() {
       return this.page * 6
     },
+    invalidTickers() {
+      return invalidCoins
+    },
     hasNextPage() {
       return this.filteredTickers.length > this.endIndex
     },
     filteredTickers() {
-      return this.tickers.filter(ticker => ticker.name.toLowerCase().includes(this.filter.toLowerCase()));
+      return this.tickers.filter((ticker) =>
+        ticker.name.toLowerCase().includes(this.filter.toLowerCase())
+      )
     },
     paginatedTickers() {
-      return this.filteredTickers.slice(this.startIndex, this.endIndex);
+      return this.filteredTickers.slice(this.startIndex, this.endIndex)
     },
     pageStateOption() {
       return {
         page: this.page,
-        filter: this.filter
+        filter: this.filter,
       }
     },
     normalizedGraph() {
-      const maxValue = Math.max(...this.graph);
-      const minValue = Math.min(...this.graph);
+      const maxValue = Math.max(...this.graph)
+      const minValue = Math.min(...this.graph)
       if (maxValue === minValue) {
-        return this.graph.map(() => 50);
+        return this.graph.map(() => 50)
       }
-      return this.graph.map(
-        (price) => 5 + ((price - minValue) * 95) / (maxValue - minValue)
-      );
-    }
+      return this.graph.map((price) => 5 + ((price - minValue) * 95) / (maxValue - minValue))
+    },
   },
 
   methods: {
-    updateTicker(tickerName,price) {
-      this.tickers.filter(el => el.name === tickerName).forEach(t => {
-        if (t === this.selectedTicker) {
-          this.graph.push(price)
-        }
-        t.price = price;
-      });
+    updateTicker(tickerName, price) {
+      this.tickers
+        .filter((el) => el.name === tickerName)
+        .forEach((t) => {
+          if (t === this.selectedTicker) {
+            this.graph.push(price)
+          }
+          t.price = price
+        })
     },
     formatPrice(price) {
       if (price === '-') {
-        return price;
+        return price
       }
-      return price > 1 ? price.toFixed(2) : price.toPrecision(2);
+      return price > 1 ? price.toFixed(2) : price.toPrecision(2)
     },
     addTicker(ticker) {
-      this.tickers.forEach(el => {
-        if (el.name.toUpperCase() === ticker.toUpperCase()) { // look what happens when remove UpperCase
+      this.tickers.forEach((el) => {
+        if (el.name.toUpperCase() === ticker.toUpperCase()) {
+          // look what happens when remove UpperCase
           this.error = true
         }
       })
-
+      
       if (this.ticker && this.error === false) {
         const currentTicker = {
-          name: ticker.toUpperCase(), 
-          price: "-" 
-        };
-        this.ticker = "";
-        this.filter = '';
+          name: ticker.toUpperCase(),
+          price: '-',
+        }
+        this.ticker = ''
+        this.filter = ''
 
         this.tickers = [...this.tickers, currentTicker];
         subscribeToTicker(currentTicker.name, (newPrice) => {
-          this.updateTicker(currentTicker.name,newPrice)
+          this.updateTicker(currentTicker.name, newPrice)
         })
       }
     },
 
     deleteTicker(tickerToRemove) {
-      this.tickers = this.tickers.filter((el) => el !== tickerToRemove);
+      this.tickers = this.tickers.filter((el) => el !== tickerToRemove)
       if (this.selectedTicker === tickerToRemove) {
         this.selectedTicker = null
       }
-      unsubscribeFromTicker(tickerToRemove.name);
+      unsubscribeFromTicker(tickerToRemove.name)
     },
 
     async getCoins() {
-      this.coins = await fetchCoins()
+      this.coins = await fetchCoins();
     },
 
     suggestedCoins() {
-      let sCoins = []
+      let sCoins = [];
       if (this.coins) {
-      for (let coin of Object.values(this.coins)) {
-        if (coin.FullName.toLowerCase().includes(this.ticker.toLowerCase()) || coin.Symbol.includes(this.ticker.toUpperCase())) {
-          sCoins.push(coin.Symbol)
+        for (let coin of Object.values(this.coins)) {
+          if (
+            coin.FullName.toLowerCase().includes(this.ticker.toLowerCase()) ||
+            coin.Symbol.includes(this.ticker.toUpperCase())
+          ) {
+            sCoins.push(coin.Symbol);
+          }
         }
-      }
       }
       if (sCoins.length > 4) {
         return sCoins.slice(0, 4)
       } else {
         return sCoins
       }
-    }
+    },
   },
 
   watch: {
     tickers() {
-      localStorage.setItem('cryptonomicon-list', JSON.stringify(this.tickers));
+      localStorage.setItem('cryptonomicon-list', JSON.stringify(this.tickers))
     },
 
     selectedTicker() {
@@ -313,20 +342,20 @@ export default {
     },
 
     paginatedTickers() {
-      if (this.paginatedTickers.length === 0 & this.page > 1) {
+      if ((this.paginatedTickers.length === 0) & (this.page > 1)) {
         this.page -= 1
       }
     },
-    
+
     pageStateOption(value) {
       window.history.pushState(
-        null, 
-        document.title, 
+        null,
+        document.title,
         `${window.location.pathname}?filter=${value.filter}&page=${value.page}`
-      );
-    }
-  }
-};
+      )
+    },
+  },
+}
 </script>
 
 <style></style>

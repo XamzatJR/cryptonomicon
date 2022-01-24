@@ -1,15 +1,21 @@
 const API_KEY = "fa2147371ff46aa9dd33a80399caaee4c0ac8ad502a502ed7d08893e764630c1";
 const socket = new WebSocket( `wss://streamer.cryptocompare.com/v2?api_key=${API_KEY}`);
 const tickersHandlers = new Map();
-
+export const invalidCoins = [];
 socket.addEventListener('message', (e) => {
-    const { TYPE: type, FROMSYMBOL: currency, PRICE: newPrice} = JSON.parse(e.data);
+    const { TYPE: type, FROMSYMBOL: currency, PRICE: newPrice, MESSAGE: message, PARAMETER: param} = JSON.parse(e.data);
+    const handlers = tickersHandlers.get(currency) ?? [];
+    if (message === "INVALID_SUB") {
+        let coin = param.slice(9, param.lastIndexOf("~"));
+        invalidCoins.push(coin);
+    }
     if (type !== '5' || newPrice === undefined) {
         return ;
     }
-    const handlers = tickersHandlers.get(currency) ?? [];
+    
     handlers.forEach(fn => fn(newPrice));
 });
+
 
 function sendToWebSocket(message) {
     const stringifiedMessage = JSON.stringify(message);
@@ -23,6 +29,7 @@ function sendToWebSocket(message) {
     }, {once: true}
     );
 }
+
 function subscribeToTickerOnWs(ticker) {
     sendToWebSocket(
         {
